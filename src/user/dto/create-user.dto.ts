@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsStrongPassword, Max, Min, MinLength } from "class-validator";
 import { UserRole } from "../entities/user.entity";
 
 export class CreateUserDto {
@@ -26,4 +26,10 @@ export class CreateUserDto {
     @MinLength(8)
     @IsNotEmpty()
     confirmPassword : string;
+
+    @IsNumber()
+    @Min(0)
+    @Max(5)
+    @IsOptional()
+    loginAttempts?: number = 0;
 }

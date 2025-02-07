@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { User } from "./entities/user.entity";
+import { User, UserRole } from "./entities/user.entity";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -36,7 +36,7 @@ export class UserRepository {
       name: data.name,
       email: data.email,
       password: hashedPassword,
-      role: data.role
+      role: data.role ?? UserRole.USER,
     });
 
     const saved = await this.userRepo.save(newUser);

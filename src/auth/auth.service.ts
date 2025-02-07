@@ -8,36 +8,46 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
     constructor(private readonly userRepository: UserRepository, private readonly jwtService: JwtService){}
 
-    async login(data: LoginDto){
+    async login(data: LoginDto) {
         try {
             const user = await this.userRepository.findByEmailAndPassword(data.email);
-            if(!user) {
+            if (!user) {
                 throw new UnauthorizedException(`The data provided is incorrect`);
             }
-
-            const isPassword = await bcrypt.compare(data.password, user.password);
-            if (!isPassword) {                
+    
+            const isPasswordValid = await bcrypt.compare(data.password, user.password);
+            if (!isPasswordValid) {
+                user.loginAttempts += 1;
+                await this.userRepository.update(user.id, { loginAttempts: user.loginAttempts });
+    
                 if (user.loginAttempts >= 5) {
                     throw new UnauthorizedException(`User is locked`);
                 }
+    
+                throw new UnauthorizedException(`The data provided is incorrect`);
             }
-
-            const token = await this.jwtService.signAsync({
-                userId: user.id,
-                role: user.role,
-                email: user.email
-            }, {
-                expiresIn: '7d'
-            });
-
-            return { token, ...user};
+    
+            const token = await this.jwtService.signAsync(
+                { userId: user.id, role: user.role, email: user.email },
+                { expiresIn: '7d' }
+            );
+    
+            return {
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                }
+            };
         } catch (error) {
             if (error instanceof UnauthorizedException) {
                 throw error;
             }
             throw new InternalServerErrorException('An unexpected error occurred');
         }
-    }
+    }    
 
     async refreshToken(oldToken: string) {
         try {
