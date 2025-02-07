@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { FriendModule } from './frined/friend.module';
 
 @Module({
   imports: [ConfigModule.forRoot(),TypeOrmModule.forRoot({
@@ -24,7 +25,7 @@ import { ChatModule } from './chat/chat.module';
     secret: process.env.JWT_SECRET || 'defaultSecret',
     global: true,
   }),
-  UserModule,AuthModule,ChatModule],
+  UserModule,AuthModule,ChatModule,FriendModule],
   controllers: [AppController],
   providers: [AppService],
 })

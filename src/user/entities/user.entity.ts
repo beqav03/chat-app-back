@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Chat } from '../../chat/entities/chat.entity';  // Assuming you have a Chat entity
+import { Friend } from "src/frined/entities/friend.entity";
 
 export enum UserRole {
     ADMIN = 'admin',
@@ -32,6 +33,13 @@ export class User {
 
     @OneToMany(() => Chat, (chats) => chats.user)
     chat: Chat[];
+
+    @OneToMany(() => Friend, (friend) => friend.sender)
+    sentFriendRequests: Friend[];
+
+    @OneToMany(() => Friend, (friend) => friend.receiver)
+    receivedFriendRequests: Friend[];
+
 
     @CreateDateColumn()
     createdAt: Date;
