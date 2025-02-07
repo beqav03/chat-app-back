@@ -1,9 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Throttle } from '@nestjs/throttler';
+import { JwtGuard } from './guards/jwt.guard';
 
 @Controller('auth')
+@UseGuards(JwtGuard)
 export class AuthController {
     constructor(private readonly authService: AuthService){}
     @Post('login')
