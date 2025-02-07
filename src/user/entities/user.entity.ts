@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Chat } from '../../chat/entities/chat.entity';  // Assuming you have a Chat entity
 
 export enum UserRole {
     ADMIN = 'admin',
@@ -28,6 +29,9 @@ export class User {
 
     @Column({ type: 'varchar', nullable: true })
     token: string | null;
+
+    @OneToMany(() => Chat, (chats) => chats.user)
+    chat: Chat[];
 
     @CreateDateColumn()
     createdAt: Date;
