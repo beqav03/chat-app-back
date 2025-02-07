@@ -31,7 +31,9 @@ export class AuthService {
                 { userId: user.id, role: user.role, email: user.email },
                 { expiresIn: '7d' }
             );
-    
+
+            await this.userRepository.updateToken(user.id, { token });
+
             return {
                 token,
                 user: {
@@ -64,9 +66,15 @@ export class AuthService {
                 email: user.email
             }, { expiresIn: '7d' });
     
+            await this.userRepository.updateToken(user.id, { token: newToken });
+
             return { token: newToken };
         } catch (error) {
             throw new UnauthorizedException('Invalid or expired token');
         }
+    }
+
+    async logout(data: LoginDto) {
+        await this.userRepository.clearToken(data.email);
     }
 }

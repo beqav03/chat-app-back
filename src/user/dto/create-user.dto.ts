@@ -32,4 +32,7 @@ export class CreateUserDto {
     @Max(5)
     @IsOptional()
     loginAttempts?: number = 0;
+
+    @IsString()
+    token: string;
 }

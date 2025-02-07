@@ -26,6 +26,9 @@ export class User {
     @Column({ default: 0 })
     loginAttempts: number;
 
+    @Column({ type: 'varchar', nullable: true })
+    token: string | null;
+
     @CreateDateColumn()
     createdAt: Date;
 

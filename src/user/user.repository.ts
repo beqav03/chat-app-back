@@ -54,6 +54,24 @@ export class UserRepository {
     return this.userRepo.findOneBy({id});
   }
 
+  async updateToken(id: number, data: UpdateUserDto) {
+    await this.userRepo
+    .createQueryBuilder('user')
+    .update()
+    .set(data)
+    .andWhere('user.id = :id', {id})
+    .execute();
+  }
+
+  async clearToken(email: string) {
+    await this.userRepo
+    .createQueryBuilder('user')
+    .update()
+    .set({ token: null })
+    .andWhere('user.email = :email', {email})
+    .execute();
+  }
+
   async remove(id: number) {
     return await this.userRepo.softDelete({id});
   }
