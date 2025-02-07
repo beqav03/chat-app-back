@@ -16,6 +16,9 @@ export class User {
     @Column()
     name: string;
 
+    @Column()
+    lastname: string;
+
     @Column({ type: 'enum', enum: UserRole, nullable: false, default: 'user' })
     role: UserRole;
 
@@ -30,6 +33,9 @@ export class User {
 
     @Column({ type: 'varchar', nullable: true })
     token: string | null;
+
+    @Column({ nullable: true })
+    profilePicture: string | null;
 
     @OneToMany(() => Chat, (chats) => chats.user)
     chat: Chat[];

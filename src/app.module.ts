@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { FriendModule } from './frined/friend.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [ConfigModule.forRoot(),TypeOrmModule.forRoot({
@@ -24,6 +25,9 @@ import { FriendModule } from './frined/friend.module';
   JwtModule.register({
     secret: process.env.JWT_SECRET || 'defaultSecret',
     global: true,
+  }),
+  MulterModule.register({
+    dest: './uploads', // Path where files will be stored
   }),
   UserModule,AuthModule,ChatModule,FriendModule],
   controllers: [AppController],
