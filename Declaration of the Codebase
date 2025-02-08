@@ -1,0 +1,10 @@
+This codebase is a **NestJS application** that provides a backend for user authentication, chat functionality, friend management, and profile handling. It utilizes **TypeORM with MySQL**, **JWT authentication**, and **guards** to manage user roles and permissions. The system consists of multiple modules:
+
+1. **User Module**: Manages user registration, updates, and authentication-related operations.
+2. **Auth Module**: Handles user login, token management, and authentication security.
+3. **Chat Module**: Provides real-time messaging through WebSockets.
+4. **Friend Module**: Manages friend requests, acceptance, and listing friends.
+5. **Profile Module**: Enables users to update profile pictures, personal information, and emails.
+6. **Email Module**: Sends verification emails for account security.
+
+The code ensures **role-based access control (RBAC)** using **JWT Guards, Admin Guards, and User Guards** to restrict unauthorized access.
