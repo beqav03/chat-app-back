@@ -34,10 +34,10 @@ export class User {
     @Column({ type: 'varchar', nullable: true })
     token: string | null;
 
-    @Column({ nullable: true })
-    profilePicture: string | null;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    profilePicture: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'text', nullable: true })
     bio: string | null;
 
     @Column({ nullable: true })
