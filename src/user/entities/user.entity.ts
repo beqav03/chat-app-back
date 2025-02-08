@@ -37,6 +37,15 @@ export class User {
     @Column({ nullable: true })
     profilePicture: string | null;
 
+    @Column({ nullable: true })
+    bio: string | null;
+
+    @Column({ nullable: true })
+    pendingEmail: string;
+
+    @Column({ nullable: true })
+    emailVerificationCode: string; 
+
     @OneToMany(() => Chat, (chats) => chats.user)
     chat: Chat[];
 

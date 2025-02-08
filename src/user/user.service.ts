@@ -4,6 +4,7 @@ import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -41,5 +42,31 @@ export class UserService {
     async remove(id: number){
         const user = await this.findOne(id);
         await this.userRepo.remove(user.id);
+    }
+
+    async updateProfilePicture(userId: number, file: Express.Multer.File): Promise<void> {
+        if (!file) {
+            throw new BadRequestException('No file uploaded');
+        }
+        const filePath = `uploads/profile-pictures/${userId}-${Date.now()}-${file.originalname}`;
+        await this.userRepository.updateProfilePicture(userId, filePath);
+    }
+
+    async updateEmail(userId: number, newEmail: string): Promise<{ message: string }> {
+        const user = await this.userRepository.findOne(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        // Call the repository method to update the email and generate a verification code
+        await this.userRepository.updateEmail(userId, newEmail);
+        return { message: 'A verification code has been sent to your new email' };
+    }    
+
+    async updatePassword(userId: number, oldPassword: string, newPassword: string) {
+        if (!oldPassword || !newPassword) {
+            throw new BadRequestException('Both old and new passwords are required');
+        }
+
+        return this.userRepository.updatePassword(userId, oldPassword, newPassword);
     }
 }

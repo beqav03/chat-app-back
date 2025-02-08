@@ -1,66 +1,53 @@
-import { Controller, Put, Body, UploadedFile, UseInterceptors, Request, UseGuards } from '@nestjs/common';
+import { Controller, Put, Body, UploadedFile, UseInterceptors, Request, UseGuards, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ProfileService } from './profile.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
+import { UserService } from 'src/user/user.service';
+import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 
 @Controller('profile')
 @UseGuards(JwtGuard) // Ensure that the user is authenticated
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(private readonly userService: UserService) {}
 
   // Update Profile Picture
   @Put('update-picture')
   @UseInterceptors(FileInterceptor('profilePicture')) // Handle 'profilePicture' from the form
   async updateProfilePicture(@UploadedFile() file: Express.Multer.File, @Request() req) {
-    const userId = req.user.id; // Assuming the user ID is stored in the JWT payload
+    const userId = req.user.id; // Extract user ID from JWT payload
+
     if (!file) {
-      throw new Error('No file uploaded');
+      throw new BadRequestException('No file uploaded');
     }
-    return this.profileService.updateProfilePicture(userId, file);
+
+    return this.userService.updateProfilePicture(userId, file);
   }
 
-  // Update Basic Profile Information (First Name, Last Name, Bio)
+  // Update Basic Profile Information (First Name, Last Name)
   @Put('update-info')
-  async updateProfileInfo(
-    @Body() updateInfoDto: { firstName: string; lastName: string; bio: string },
-    @Request() req,
-  ) {
+  async updateProfileInfo(@Body() updateInfoDto: UpdateUserDto, @Request() req) {
     const userId = req.user.id;
-    return this.profileService.updateProfile(userId, updateInfoDto);
+    return this.userService.update(userId, updateInfoDto);
   }
 
   // Update Email with Confirmation Code
   @Put('update-email')
-  async updateEmail(
-    @Body() updateEmailDto: { newEmail: string },
-    @Request() req,
-  ) {
+  async updateEmail(@Body() updateEmailDto: { newEmail: string }, @Request() req) {
     const userId = req.user.id;
     const { newEmail } = updateEmailDto;
 
     // Basic validation for email
     if (!newEmail || !this.isValidEmail(newEmail)) {
-      throw new Error('Invalid email format');
+      throw new BadRequestException('Invalid email format');
     }
 
-    return this.profileService.updateEmail(userId, newEmail);
+    return this.userService.updateEmail(userId, newEmail);
   }
 
   // Update Password
   @Put('update-password')
-  async updatePassword(
-    @Body() updatePasswordDto: { oldPassword: string; newPassword: string },
-    @Request() req,
-  ) {
+  async updatePassword(@Body() updatePasswordDto: { oldPassword: string; newPassword: string }, @Request() req) {
     const userId = req.user.id;
-    const { oldPassword, newPassword } = updatePasswordDto;
-
-    // Basic validation for passwords
-    if (!oldPassword || !newPassword) {
-      throw new Error('Both old and new passwords are required');
-    }
-
-    return this.profileService.updatePassword(userId, updatePasswordDto);
+    return this.userService.updatePassword(userId, updatePasswordDto.oldPassword, updatePasswordDto.newPassword);
   }
 
   // Simple email validation function

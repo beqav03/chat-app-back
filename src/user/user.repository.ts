@@ -5,6 +5,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 var bcrypt = require('bcryptjs');
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserRepository {
@@ -54,6 +55,20 @@ export class UserRepository {
     return this.userRepo.findOneBy({id});
   }
 
+  async updatePassword(email: number, oldPassword: string, newPassword: string) {
+  const user = await this.userRepo
+    .createQueryBuilder('user')
+    .andWhere('user.email = :email', {email})
+    .getOne();
+
+  if (oldPassword !== user?.password) {
+    throw new BadRequestException('Passwords do not match');
+  }
+
+  const newHashedPassword = await bcrypt.hash(newPassword, 15);
+  await this.userRepo.update(user.id, { password: newHashedPassword });
+  }
+
   async updateToken(id: number, data: UpdateUserDto) {
     await this.userRepo
     .createQueryBuilder('user')
@@ -70,6 +85,28 @@ export class UserRepository {
     .set({ token: null })
     .andWhere('user.email = :email', {email})
     .execute();
+  }
+
+  async updateProfilePicture(userId: number, profilePicture: string) {
+    await this.userRepo
+      .createQueryBuilder('user')
+      .update()
+      .set({ profilePicture })
+      .andWhere('user.id = :id', { id: userId })
+      .execute();
+  }
+
+  async updateEmail(userId: number, newEmail: string) {
+    const verificationCode = crypto.randomInt(1000, 9999).toString();
+    await this.userRepo
+      .createQueryBuilder('user')
+      .update()
+      .set({ pendingEmail: newEmail, emailVerificationCode: verificationCode })
+      .andWhere('user.id = :id', { id: userId })
+      .execute();
+
+    // Simulate sending an email (replace this with an actual email service)
+    console.log(`Verification code sent to ${newEmail}: ${verificationCode}`);
   }
 
   async remove(id: number) {
