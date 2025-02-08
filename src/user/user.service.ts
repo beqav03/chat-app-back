@@ -69,4 +69,8 @@ export class UserService {
 
         return this.userRepository.updatePassword(userId, oldPassword, newPassword);
     }
+
+    async searchUsers(keyword: string) {
+        return this.userRepository.searchUsers(keyword);
+    }
 }

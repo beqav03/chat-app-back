@@ -109,6 +109,15 @@ export class UserRepository {
     console.log(`Verification code sent to ${newEmail}: ${verificationCode}`);
   }
 
+  async searchUsers(keyword: string): Promise<User[]> {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
+      .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
+      .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
+      .getMany();
+  }
+
   async remove(id: number) {
     return await this.userRepo.softDelete({id});
   }
