@@ -30,17 +30,33 @@ export class ProfileController {
   }
 
   // Update Email with Confirmation Code
+  // Endpoint to initiate email update
   @Put('update-email')
   async updateEmail(@Body() updateEmailDto: { newEmail: string }, @Request() req) {
-    const userId = req.user.id;
-    const { newEmail } = updateEmailDto;
+      const userId = req.user.id;
+      const { newEmail } = updateEmailDto;
 
-    // Basic validation for email
-    if (!newEmail || !this.isValidEmail(newEmail)) {
-      throw new BadRequestException('Invalid email format');
-    }
+      // Basic validation for email
+      if (!newEmail || !this.isValidEmail(newEmail)) {
+          throw new BadRequestException('Invalid email format');
+      }
 
-    return this.userService.updateEmail(userId, newEmail);
+      return this.userService.updateEmail(userId, newEmail);
+  }
+
+  // Endpoint to confirm email update after verification
+  @Put('confirm-email')
+  async confirmEmail(@Body() confirmEmailDto: { code: string }, @Request() req) {
+      const userId = req.user.id;
+      const { code } = confirmEmailDto;
+
+      return this.userService.confirmEmailChange(userId, code);
+  }
+
+  // Helper method for email validation
+  private isValidEmail(email: string): boolean {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
   }
 
   // Update Password
@@ -48,11 +64,5 @@ export class ProfileController {
   async updatePassword(@Body() updatePasswordDto: { oldPassword: string; newPassword: string }, @Request() req) {
     const userId = req.user.id;
     return this.userService.updatePassword(userId, updatePasswordDto.oldPassword, updatePasswordDto.newPassword);
-  }
-
-  // Simple email validation function
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    return emailRegex.test(email);
   }
 }

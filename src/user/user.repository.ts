@@ -96,17 +96,28 @@ export class UserRepository {
       .execute();
   }
 
-  async updateEmail(userId: number, newEmail: string) {
-    const verificationCode = crypto.randomInt(1000, 9999).toString();
+  // Update the pending email and save verification code
+  async updateEmail(userId: number, newEmail: string, verificationCode: string) {
     await this.userRepo
-      .createQueryBuilder('user')
-      .update()
-      .set({ pendingEmail: newEmail, emailVerificationCode: verificationCode })
-      .andWhere('user.id = :id', { id: userId })
-      .execute();
+        .createQueryBuilder('user')
+        .update()
+        .set({ pendingEmail: newEmail, emailVerificationCode: verificationCode })
+        .andWhere('user.id = :id', { id: userId })
+        .execute();
+}
 
-    // Simulate sending an email (replace this with an actual email service)
-    console.log(`Verification code sent to ${newEmail}: ${verificationCode}`);
+// Finalize email update after verification
+  async confirmEmailChange(userId: number) {
+    await this.userRepo
+        .createQueryBuilder('user')
+        .update()
+        .set({ 
+            email: () => 'pendingEmail', 
+            pendingEmail: null, 
+            emailVerificationCode: null 
+        })
+        .where('user.id = :id', { id: userId })
+        .execute();
   }
 
   async searchUsers(keyword: string): Promise<User[]> {

@@ -5,10 +5,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectRepository(User) private readonly userRepo: UserRepository, private readonly userRepository: UserRepository){}
+    constructor(@InjectRepository(User) private readonly userRepo: UserRepository, private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService ){}
 
     findAll(){
         return this.userRepository.findAll();
@@ -52,15 +54,37 @@ export class UserService {
         await this.userRepository.updateProfilePicture(userId, filePath);
     }
 
-    async updateEmail(userId: number, newEmail: string): Promise<{ message: string }> {
+     // Update Email: Generate a verification code and send it to the new email
+     async updateEmail(userId: number, newEmail: string): Promise<{ message: string }> {
         const user = await this.userRepository.findOne(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        // Call the repository method to update the email and generate a verification code
-        await this.userRepository.updateEmail(userId, newEmail);
+
+        // Generate a 4-digit verification code
+        const verificationCode = crypto.randomInt(1000, 9999).toString();
+
+        // Save the new email and verification code in the database (pending email change)
+        await this.userRepository.updateEmail(userId, newEmail, verificationCode);
+
+        // Send the verification email with the code (using EmailService)
+        await this.emailService.sendVerificationEmail(newEmail, verificationCode);
+
         return { message: 'A verification code has been sent to your new email' };
-    }    
+    }
+
+    // Finalize email change after user enters the verification code
+    async confirmEmailChange(userId: number, code: string): Promise<{ message: string }> {
+        const user = await this.userRepository.findOne(userId);
+        if (!user || user.emailVerificationCode !== code) {
+            throw new BadRequestException('Invalid verification code');
+        }
+
+        // Update the user's email to the pending email
+        await this.userRepository.confirmEmailChange(userId);
+
+        return { message: 'Email successfully updated' };
+    } 
 
     async updatePassword(userId: number, oldPassword: string, newPassword: string) {
         if (!oldPassword || !newPassword) {

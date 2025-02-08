@@ -40,11 +40,11 @@ export class User {
     @Column({ type: 'text', nullable: true })
     bio: string | null;
 
-    @Column({ nullable: true })
-    pendingEmail: string;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    pendingEmail: string | null;  // Allow null for pendingEmail
 
-    @Column({ nullable: true })
-    emailVerificationCode: string; 
+    @Column({ type: 'varchar', length: 6, nullable: true })
+    emailVerificationCode: string | null;  // Allow null for emailVerificationCode
 
     @OneToMany(() => Chat, (chats) => chats.user)
     chat: Chat[];
