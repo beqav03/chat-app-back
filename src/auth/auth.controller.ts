@@ -5,7 +5,6 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from './guards/jwt.guard';
 
 @Controller('auth')
-@UseGuards(JwtGuard)
 export class AuthController {
     constructor(private readonly authService: AuthService){}
     @Post('login')
@@ -15,6 +14,7 @@ export class AuthController {
     }
 
     @Post('logout')
+    @UseGuards(JwtGuard)
     logout(@Body() data: LoginDto) {
         return this.authService.logout(data);
     }
