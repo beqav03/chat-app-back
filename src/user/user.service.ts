@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import { EmailService } from 'src/email/email.service';
+var bcrypt = require('bcryptjs');
 
 @Injectable()
 export class UserService {
@@ -87,12 +88,18 @@ export class UserService {
     } 
 
     async updatePassword(userId: number, oldPassword: string, newPassword: string) {
-        if (!oldPassword || !newPassword) {
-            throw new BadRequestException('Both old and new passwords are required');
-        }
-
-        return this.userRepository.updatePassword(userId, oldPassword, newPassword);
-    }
+        const user = await this.userRepository.findOne(userId);
+        if (!user) throw new NotFoundException('User not found');
+        
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) throw new BadRequestException('Old password is incorrect');
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        await this.userRepository.update(userId, { password: hashedPassword });
+        
+        return { message: "Password updated successfully" };
+      }
+      
 
     async searchUsers(keyword: string) {
         return this.userRepository.searchUsers(keyword);
