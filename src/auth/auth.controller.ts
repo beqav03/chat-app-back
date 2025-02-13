@@ -8,8 +8,8 @@ import { JwtGuard } from './guards/jwt.guard';
 export class AuthController {
     constructor(private readonly authService: AuthService){}
     @Post('login')
-    @Throttle({ default: { limit: 5, ttl: 60 }})
-    login(@Body() data: LoginDto) {
+    @Throttle({ default: { limit: 5, ttl: 60 } })
+    async login(@Body() data: LoginDto) {
         return this.authService.login(data);
     }
 
