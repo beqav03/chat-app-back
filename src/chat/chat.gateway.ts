@@ -1,15 +1,22 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WsResponse } from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
+import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: process.env.FRONTEND_URL || '*',  // Allow frontend URL
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  private logger: Logger = new Logger('ChatGateway');
-  private server: Server;
+  @WebSocketServer()
+  server: Server;
 
-  afterInit(server: Server) {
-    this.server = server;
-    this.logger.log('WebSocket Initialized');
+  private logger: Logger = new Logger('ChatGateway');
+
+  afterInit() {
+    this.logger.log('WebSocket initialized');  // Confirm WebSocket startup
   }
 
   handleConnection(client: Socket) {
@@ -18,11 +25,5 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-  }
-
-  @SubscribeMessage('send_message')
-  handleMessage(@MessageBody() data: { userId: string, message: string }): WsResponse<string> {
-    this.logger.log(`Message received: ${data.message}`);
-    return { event: 'message', data: data.message };
   }
 }
