@@ -4,8 +4,8 @@ import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || '*',  // Allow frontend URL
-    methods: ['GET', 'POST'],
+    origin: process.env.FRONTEND_URL,
+    methods: ["GET", "POST"],
     credentials: true,
   },
 })
