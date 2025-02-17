@@ -1,4 +1,4 @@
-import { Controller, Put, Body, UploadedFile, UseInterceptors, Request, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Put, Body, UploadedFile, UseInterceptors, Request, UseGuards, BadRequestException, Get } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { UserService } from 'src/user/user.service';
@@ -8,6 +8,26 @@ import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 @UseGuards(JwtGuard) // Ensure that the user is authenticated
 export class ProfileController {
   constructor(private readonly userService: UserService) {}
+
+  @Get()
+  async getProfile(@Request() req) {
+    const userId = req.user.userId;
+
+    const user = await this.userService.findOne(userId);
+
+    if (!user) {
+      return { message: 'User not found' };
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+    };
+  }
 
   // Update Profile Picture
   @Put('update-picture')
