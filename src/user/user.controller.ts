@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -32,11 +32,17 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   } 
   @Get('search')
-  async searchUsers(@Query('keyword') keyword: string) {
+    async searchUsers(@Query('keyword') keyword: string) {
     if (!keyword) {
-      throw new Error('Keyword is required');
+      throw new BadRequestException('Keyword is required');
     }
-    return this.userService.searchUsers(keyword);
+    
+    try {
+      return await this.userService.searchUsers(keyword);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw new InternalServerErrorException('Something went wrong while searching users');
+    }
   }
 
   @UseGuards(UserGuard)
