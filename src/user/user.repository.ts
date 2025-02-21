@@ -121,20 +121,15 @@ export class UserRepository {
   }
 
   async searchUsers(keyword: string): Promise<User[]> {
-    if (!this.userRepo) {
-      throw new Error('User Repository is not initialized');
-    }
-    console.log('Searching users with keyword:', keyword);
-  
     const users = await this.userRepo
       .createQueryBuilder('user')
       .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
       .getMany();
-    console.log('Users found:', users);
-    return users.length ? users : [];
-  }  
+  
+    return users;
+  }
 
   async remove(id: number) {
     return await this.userRepo.softDelete({id});

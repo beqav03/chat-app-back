@@ -21,6 +21,17 @@ export class UserController {
   }
 
   @UseGuards(UserGuard)
+  @Get('search')
+  async searchUsers(@Query('keyword') keyword: string) {
+    try {
+      const users = await this.userService.searchUsers(keyword);
+      return users;
+    } catch (error) {
+      throw new InternalServerErrorException('Something went wrong while searching users');
+    }
+  }  
+
+  @UseGuards(UserGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
@@ -31,21 +42,6 @@ export class UserController {
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   } 
-  @UseGuards(UserGuard)
-  @Get('search')
-  async searchUsers(@Query('keyword') keyword: string) {
-    if (!keyword) {
-      throw new BadRequestException('Keyword is required');
-    }
-
-    try {
-      const users = await this.userService.searchUsers(keyword);
-      return users;
-    } catch (error) {
-      console.error('Error searching users:', error.message, error.stack); // Log full error details
-      throw new InternalServerErrorException('Something went wrong while searching users');
-    }
-  }  
 
   @UseGuards(UserGuard)
   @Delete(':id')
