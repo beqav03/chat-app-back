@@ -122,12 +122,12 @@ export class UserRepository {
 
   async searchUsers(keyword: string): Promise<User[]> {
     const users = await this.userRepo
-    .createQueryBuilder('user')
-    .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
-    .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
-    .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
-    .getMany();
-
+      .createQueryBuilder('user')
+      .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
+      .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
+      .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
+      .getMany();
+  
     return users.length ? users : [];
   }
 

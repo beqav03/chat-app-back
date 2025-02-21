@@ -32,7 +32,7 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   } 
   @Get('search')
-    async searchUsers(@Query('keyword') keyword: string) {
+  async searchUsers(@Query('keyword') keyword: string) {
     if (!keyword) {
       throw new BadRequestException('Keyword is required');
     }
