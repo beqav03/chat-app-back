@@ -31,6 +31,7 @@ export class UserController {
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   } 
+  @UseGuards(UserGuard)
   @Get('search')
   async searchUsers(@Query('keyword') keyword: string) {
     if (!keyword) {
