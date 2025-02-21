@@ -123,6 +123,7 @@ export class UserRepository {
   async searchUsers(keyword: string): Promise<{ name: string, lastname: string, email: string }[]> {
     const users = await this.userRepo
       .createQueryBuilder('user')
+      .select(['user.name', 'user.lastname', 'user.email'])
       .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
