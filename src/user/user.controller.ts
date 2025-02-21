@@ -37,14 +37,15 @@ export class UserController {
     if (!keyword) {
       throw new BadRequestException('Keyword is required');
     }
-    
+
     try {
-      return await this.userService.searchUsers(keyword);
+      const users = await this.userService.searchUsers(keyword);
+      return users;
     } catch (error) {
-      console.error('Error searching users:', error);
+      console.error('Error searching users:', error.message, error.stack); // Log full error details
       throw new InternalServerErrorException('Something went wrong while searching users');
     }
-  }
+  }  
 
   @UseGuards(UserGuard)
   @Delete(':id')
