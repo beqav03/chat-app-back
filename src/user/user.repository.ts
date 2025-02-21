@@ -120,7 +120,7 @@ export class UserRepository {
         .execute();
   }
 
-  async searchUsers(keyword: string): Promise<User[]> {
+  async searchUsers(keyword: string): Promise<{ name: string, lastname: string, email: string }[]> {
     const users = await this.userRepo
       .createQueryBuilder('user')
       .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
