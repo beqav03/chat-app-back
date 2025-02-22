@@ -1,64 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Friend } from './entities/friend.entity';
-import { User } from '../user/entities/user.entity';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { UserRepository } from 'src/user/user.repository';
+import { FriendRepository } from './friend.repository';
 
 @Injectable()
 export class FriendService {
   constructor(
-    @InjectRepository(Friend) private readonly friendRepo: Repository<Friend>,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly friendRepo: FriendRepository,
+    private readonly userRepository: UserRepository
   ) {}
 
+  async findFriend(id: number) {
+    const friendFound = await this.userRepository.allFriends(id);
+  
+    return friendFound;
+  }
+
   async sendFriendRequest(senderId: number, receiverId: number) {
-    const sender = await this.userRepo.findOne({ where: { id: senderId } });
-    const receiver = await this.userRepo.findOne({ where: { id: receiverId } });
-
-    if (!sender || !receiver) {
-      throw new NotFoundException('Sender or Receiver not found');
-    }
-
-    const friendRequest = this.friendRepo.create({
-      sender,
-      receiver,
-      status: 'pending',
-    });
-
-    return this.friendRepo.save(friendRequest);
+    return this.friendRepo.sendFriendRequest(senderId, receiverId);
   }
 
   async acceptFriendRequest(requestId: number) {
-    const request = await this.friendRepo.findOne({ 
-      where: { id: requestId }, 
-      relations: ['sender', 'receiver'] 
-    });
-
-    if (!request) throw new NotFoundException('Friend request not found');
-
-    request.status = 'accepted';
-    return this.friendRepo.save(request);
+    const response = await this.friendRepo.acceptFriendRequest(requestId);
+    if(!response){
+      throw new BadRequestException('Could not be accepted');
+    } else {
+      return 'accepted'
+    }
   }
 
   async rejectFriendRequest(requestId: number) {
-    const request = await this.friendRepo.findOne({ 
-      where: { id: requestId }, 
-      relations: ['sender', 'receiver']
-    });
-
-    if (!request) throw new NotFoundException('Friend request not found');
-
-    request.status = 'rejected';
-    return this.friendRepo.save(request);
-  }
-
-  async getFriends(userId: number) {
-    return this.friendRepo.find({
-      where: [
-        { sender: { id: userId }, status: 'accepted' },
-        { receiver: { id: userId }, status: 'accepted' },
-      ],
-      relations: ['sender', 'receiver'],
-    });
+    const response = await this.friendRepo.rejectFriendRequest(requestId);
+    if(!response){
+      throw new BadRequestException('Could not be rejected');
+    } else {
+      return 'rejected'
+    }
   }
 }

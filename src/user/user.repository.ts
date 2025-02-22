@@ -5,7 +5,6 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 var bcrypt = require('bcryptjs');
-import * as crypto from 'crypto';
 
 @Injectable()
 export class UserRepository {
@@ -135,4 +134,24 @@ export class UserRepository {
   async remove(id: number) {
     return await this.userRepo.softDelete({id});
   }
+
+  async allFriends(id: number) {
+    const receiverFriends = await this.userRepo
+      .createQueryBuilder('user')
+      .select(['user.name', 'user.lastname', 'user.email', 'friend.status'])
+      .leftJoin('friend', 'friend', 'user.id = friend.receiverId')
+      .where('friend.senderId = :id', { id })
+      .andWhere('friend.status IN (:...status)', { status: ['pending', 'accepted'] })
+      .getMany();
+  
+    const senderFriends = await this.userRepo
+      .createQueryBuilder('user')
+      .select(['friend.id','user.name', 'user.lastname', 'user.email', 'friend.status'])
+      .leftJoin('friend', 'friend', 'user.id = friend.senderId')
+      .where('friend.receiverId = :id', { id })
+      .andWhere('friend.status IN (:...status)', { status: ['pending', 'accepted'] })
+      .getMany();
+  
+    return [...receiverFriends, ...senderFriends];
+  }  
 }
