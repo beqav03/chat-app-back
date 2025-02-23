@@ -122,7 +122,7 @@ export class UserRepository {
   async searchUsers(keyword: string): Promise<{ name: string, lastname: string, email: string }[]> {
     const users = await this.userRepo
       .createQueryBuilder('user')
-      .select(['user.id','user.name', 'user.lastname', 'user.email','friend.status'])
+      .select(['user.id','user.name', 'user.lastname', 'user.email'])
       .where('user.name LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.lastname LIKE :keyword', { keyword: `%${keyword}%` })
       .orWhere('user.email LIKE :keyword', { keyword: `%${keyword}%` })
@@ -138,20 +138,20 @@ export class UserRepository {
   async allFriends(id: number) {
     const receiverFriends = await this.userRepo
       .createQueryBuilder('user')
-      .select(['user.name', 'user.lastname', 'user.email', 'friend.status'])
-      .leftJoin('friend', 'friend', 'user.id = friend.receiverId')
+      .leftJoinAndSelect('friend', 'friend', 'user.id = friend.receiverId')
+      .select(['friend.id', 'user.name', 'user.lastname', 'user.email', 'friend.status'])
       .where('friend.senderId = :id', { id })
       .andWhere('friend.status IN (:...status)', { status: ['pending', 'accepted'] })
-      .getMany();
+      .getRawMany();
   
     const senderFriends = await this.userRepo
       .createQueryBuilder('user')
-      .select(['friend.id','user.name', 'user.lastname', 'user.email', 'friend.status'])
-      .leftJoin('friend', 'friend', 'user.id = friend.senderId')
+      .leftJoinAndSelect('friend', 'friend', 'user.id = friend.senderId')
+      .select(['friend.id', 'user.name', 'user.lastname', 'user.email', 'friend.status'])
       .where('friend.receiverId = :id', { id })
       .andWhere('friend.status IN (:...status)', { status: ['pending', 'accepted'] })
-      .getMany();
-  
-    return [...receiverFriends, ...senderFriends];
+      .getRawMany();
+
+      return [...receiverFriends, ...senderFriends];
   }  
 }

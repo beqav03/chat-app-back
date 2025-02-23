@@ -8,10 +8,8 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('friends')
-@UseGuards(JwtGuard)
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
-  @UseGuards(UserGuard)
   @Get(':id')
   findFriend(@Param('id') id: string) {
     return this.friendService.findFriend(+id);
