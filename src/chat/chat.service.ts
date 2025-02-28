@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './entities/chat.entity';
 import { UserRepository } from 'src/user/user.repository';
 import { ChatGateway } from './chat.gateway';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger('ChatService');
+
   constructor(
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
     private userRepository: UserRepository,
@@ -14,34 +17,48 @@ export class ChatService {
   ) {}
 
   async sendMessage(userId: number, message: string, friendId: number) {
-    const user = await this.userRepository.findOne(userId);
-    if (!user) return { status: 'User not found' };
+    try {
+      const user = await this.userRepository.findOne(userId);
+      if (!user) {
+        this.logger.warn(`User not found for ID: ${userId}`);
+        return { status: 'User not found' };
+      }
 
-    const newMessage = this.chatRepository.create({ 
-      user, 
-      message,
-      friendId,
-      timestamp: new Date().toISOString(),
-    });
-    const savedMessage = await this.chatRepository.save(newMessage);
+      const newMessage = this.chatRepository.create({ 
+        user, 
+        message,
+        friendId,
+        timestamp: new Date().toISOString(),
+      });
+      const savedMessage = await this.chatRepository.save(newMessage);
 
-    this.chatGateway.server.emit('message', {
-      userId,
-      friendId,
-      message,
-      timestamp: savedMessage.timestamp,
-    });
+      this.chatGateway.server.emit('message', {
+        userId,
+        friendId,
+        message,
+        timestamp: savedMessage.timestamp,
+      });
 
-    return { status: 'Message sent', message: savedMessage };
+      return { status: 'Message sent', message: savedMessage };
+    } catch (error) {
+      this.logger.error(`Error sending message: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Failed to send message');
+    }
   }
 
   async getChatHistory(userId: number, friendId: number) {
-    const messages = await this.chatRepository
-      .createQueryBuilder('chat')
-      .leftJoin('chat.user', 'user')
-      .where('(user.id = :userId AND chat.friendId = :friendId) OR (user.id = :friendId AND chat.friendId = :userId)', { userId, friendId })
-      .orderBy('chat.timestamp', 'ASC')
-      .getMany();
-    return messages;
+    try {
+      const messages = await this.chatRepository
+        .createQueryBuilder('chat')
+        .leftJoin('chat.user', 'user')
+        .where('(user.id = :userId AND chat.friendId = :friendId) OR (user.id = :friendId AND chat.friendId = :userId)', { userId, friendId })
+        .orderBy('chat.timestamp', 'ASC')
+        .getMany();
+      this.logger.debug(`Fetched ${messages.length} messages for user ${userId} and friend ${friendId}`);
+      return messages;
+    } catch (error) {
+      this.logger.error(`Error fetching chat history: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Failed to fetch chat history');
+    }
   }
 }

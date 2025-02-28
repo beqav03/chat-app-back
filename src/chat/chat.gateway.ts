@@ -1,10 +1,11 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: '*',
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -15,12 +16,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   private logger: Logger = new Logger('ChatGateway');
 
+  constructor(private jwtService: JwtService) {}
   afterInit() {
-    this.logger.log('WebSocket initialized');  // Confirm WebSocket startup
+    this.logger.log('WebSocket initialized');
   }
 
   handleConnection(client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+    const token = client.handshake.auth.token;
+    try {
+      this.jwtService.verify(token);
+      this.logger.log(`Client connected: ${client.id}`);
+    } catch (error) {
+      this.logger.warn(`Unauthorized connection attempt: ${client.id}`);
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
