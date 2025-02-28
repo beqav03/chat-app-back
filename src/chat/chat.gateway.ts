@@ -1,22 +1,12 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ChatService } from './chat.service';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
-    methods: ['GET', 'POST'],
+    methods: ["GET", "POST"],
     credentials: true,
   },
 })
@@ -26,20 +16,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   private logger: Logger = new Logger('ChatGateway');
 
-  constructor(
-    private jwtService: JwtService,
-    private chatService: ChatService,
-  ) {}
+  constructor(private jwtService: JwtService) {}
 
   afterInit() {
     this.logger.log('WebSocket initialized');
   }
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     const token = client.handshake.auth.token;
     try {
-      this.jwtService.verify(token);
-      this.logger.log(`Client connected: ${client.id}`);
+      const decoded = this.jwtService.verify(token);
+      client.join(`user_${decoded.userId}`);
+      this.logger.log(`Client connected: ${client.id} - User: ${decoded.userId}`);
     } catch (error) {
       this.logger.warn(`Unauthorized connection attempt: ${client.id}`);
       client.disconnect();
@@ -48,34 +36,5 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-  }
-
-  // Handle the "message" event from the client
-  @SubscribeMessage('message')
-  async handleMessage(
-    @MessageBody() payload: any,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`Received message: ${payload.message}`);
-
-    try {
-      const { userId, message, friendId } = payload;
-      const result = await this.chatService.sendMessage(userId, message, friendId);
-
-      if (result.status === 'Message sent' && result.message) {
-        this.server.emit('message', {
-          userId,
-          friendId,
-          message,
-          timestamp: result.message.timestamp,
-        });
-
-        this.logger.log(`Message broadcasted to clients`);
-      } else {
-        this.logger.warn(`Failed to save message: ${result.status}`);
-      }
-    } catch (error) {
-      this.logger.error(`Error handling message: ${error.message}`);
-    }
   }
 }
