@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Query } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 
@@ -14,7 +14,7 @@ export class ChatController {
 
   @Get('history/:friendId')
   @UseGuards(JwtGuard)
-  getChatHistory(@Param('friendId') friendId: string, @Body() body: { userId: number }) {
-    return this.chatService.getChatHistory(body.userId, +friendId);
+  getChatHistory(@Query('userId') userId: string, @Param('friendId') friendId: string) {
+    return this.chatService.getChatHistory(+userId, +friendId);
   }
 }

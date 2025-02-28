@@ -38,7 +38,8 @@ export class ChatService {
   async getChatHistory(userId: number, friendId: number) {
     const messages = await this.chatRepository
       .createQueryBuilder('chat')
-      .where('(chat.userId = :userId AND chat.friendId = :friendId) OR (chat.userId = :friendId AND chat.friendId = :userId)', { userId, friendId })
+      .leftJoin('chat.user', 'user')
+      .where('(user.id = :userId AND chat.friendId = :friendId) OR (user.id = :friendId AND chat.friendId = :userId)', { userId, friendId })
       .orderBy('chat.timestamp', 'ASC')
       .getMany();
     return messages;
