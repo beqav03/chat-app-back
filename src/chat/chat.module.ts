@@ -6,11 +6,19 @@ import { AuthModule } from '../auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Chat } from './entities/chat.entity';
 import { UserModule } from 'src/user/user.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chat]), AuthModule, UserModule],
+  imports: [
+    TypeOrmModule.forFeature([Chat]),
+    AuthModule,
+    UserModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '7d' },
+    }),
+  ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway],
-  exports: [ChatGateway],
 })
 export class ChatModule {}
