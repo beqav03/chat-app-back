@@ -9,6 +9,12 @@ export class Chat {
   @Column()
   message: string;
 
+  @Column()
+  timestamp: string;
+
   @ManyToOne(() => User, (user) => user.chat)
   user: User;
+
+  @Column()
+  friendId: number;
 }

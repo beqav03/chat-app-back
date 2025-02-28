@@ -1,7 +1,6 @@
 import { Controller, Post, Param, UseGuards, Get, Req } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
-import { UserGuard } from 'src/auth/guards/user.guard';
 
 interface AuthenticatedRequest extends Request {
   user?: { id: number };
@@ -10,25 +9,32 @@ interface AuthenticatedRequest extends Request {
 @Controller('friends')
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
+
+  @Get()
+  @UseGuards(JwtGuard)
+  findAll(@Req() req: AuthenticatedRequest) {
+    return this.friendService.findAll(req.user!.id);
+  }
+
   @Get(':id')
   findFriend(@Param('id') id: string) {
     return this.friendService.findFriend(+id);
   }
 
-  @UseGuards(UserGuard)
   @Post('request/:receiverId')
+  @UseGuards(JwtGuard)
   sendFriendRequest(@Param('receiverId') receiverId: number, @Req() req: AuthenticatedRequest) {
-    if (!req.user) throw new Error('User not found in request');
-    return this.friendService.sendFriendRequest(req.user.id, receiverId);
+    return this.friendService.sendFriendRequest(req.user!.id, receiverId);
   }
 
-  @UseGuards(UserGuard)
   @Post('accept/:requestId')
+  @UseGuards(JwtGuard)
   acceptFriendRequest(@Param('requestId') requestId: number) {
     return this.friendService.acceptFriendRequest(requestId);
   }
-  @UseGuards(UserGuard)
+
   @Post('reject/:requestId')
+  @UseGuards(JwtGuard)
   rejectFriendRequest(@Param('requestId') requestId: number) {
     return this.friendService.rejectFriendRequest(requestId);
   }

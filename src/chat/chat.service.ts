@@ -3,21 +3,43 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './entities/chat.entity';
 import { UserRepository } from 'src/user/user.repository';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
-    private userRepository: UserRepository, 
+    private userRepository: UserRepository,
+    private chatGateway: ChatGateway,
   ) {}
 
-  async sendMessage(userId: number, message: string) {
+  async sendMessage(userId: number, message: string, friendId: number) {
     const user = await this.userRepository.findOne(userId);
-    if (user) {
-      const newMessage = this.chatRepository.create({ user, message });
-      await this.chatRepository.save(newMessage);
-      return { status: 'Message sent' };
-    }
-    return { status: 'User not found' };
+    if (!user) return { status: 'User not found' };
+
+    const newMessage = this.chatRepository.create({ 
+      user, 
+      message,
+      timestamp: new Date().toISOString(),
+    });
+    const savedMessage = await this.chatRepository.save(newMessage);
+
+    this.chatGateway.server.emit('message', {
+      userId,
+      friendId,
+      message,
+      timestamp: savedMessage.timestamp,
+    });
+
+    return { status: 'Message sent', message: savedMessage };
+  }
+
+  async getChatHistory(userId: number, friendId: number) {
+    const messages = await this.chatRepository
+      .createQueryBuilder('chat')
+      .where('chat.userId IN (:userId, :friendId)', { userId, friendId })
+      .orderBy('chat.timestamp', 'ASC')
+      .getMany();
+    return messages;
   }
 }
