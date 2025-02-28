@@ -1,6 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Param, Query, InternalServerErrorException } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('chat')
 export class ChatController {
