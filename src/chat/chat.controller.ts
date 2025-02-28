@@ -7,13 +7,11 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('send')
-  @UseGuards(JwtGuard)
   sendMessage(@Body() messageDto: { userId: number, message: string, friendId: number }) {
     return this.chatService.sendMessage(messageDto.userId, messageDto.message, messageDto.friendId);
   }
 
   @Get('history/:friendId')
-  @UseGuards(JwtGuard)
   async getChatHistory(@Query('userId') userId: string, @Param('friendId') friendId: string) {
     try {
       const history = await this.chatService.getChatHistory(+userId, +friendId);
