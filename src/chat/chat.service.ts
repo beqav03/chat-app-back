@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './entities/chat.entity';
 import { UserRepository } from 'src/user/user.repository';
-import { ChatGateway } from './chat.gateway';
 import { Logger } from '@nestjs/common';
 
 @Injectable()
@@ -13,7 +12,6 @@ export class ChatService {
   constructor(
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
     private userRepository: UserRepository,
-    private chatGateway: ChatGateway,
   ) {}
 
   async sendMessage(userId: number, message: string, friendId: number) {
@@ -24,22 +22,19 @@ export class ChatService {
         return { status: 'User not found' };
       }
 
-      const newMessage = this.chatRepository.create({ 
-        user, 
+      const newMessage = this.chatRepository.create({
+        user,
         message,
         friendId,
         timestamp: new Date().toISOString(),
       });
+
       const savedMessage = await this.chatRepository.save(newMessage);
 
-      this.chatGateway.server.emit('message', {
-        userId,
-        friendId,
-        message,
-        timestamp: savedMessage.timestamp,
-      });
-
-      return { status: 'Message sent', message: savedMessage };
+      return {
+        status: 'Message sent',
+        message: savedMessage,
+      };
     } catch (error) {
       this.logger.error(`Error sending message: ${error.message}`, error.stack);
       throw new InternalServerErrorException('Failed to send message');
