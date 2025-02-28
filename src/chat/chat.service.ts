@@ -49,7 +49,11 @@ export class ChatService {
         .where('(user.id = :userId AND chat.friendId = :friendId) OR (user.id = :friendId AND chat.friendId = :userId)', { userId, friendId })
         .orderBy('chat.timestamp', 'ASC')
         .getMany();
-      this.logger.debug(`Fetched ${messages.length} messages for user ${userId} and friend ${friendId}`);
+  
+      if (!messages || messages.length === 0) {
+        return [];
+      }
+  
       return messages;
     } catch (error) {
       this.logger.error(`Error fetching chat history: ${error.message}`, error.stack);

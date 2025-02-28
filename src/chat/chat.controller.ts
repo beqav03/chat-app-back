@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Query, InternalServerErrorException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 
@@ -14,7 +14,12 @@ export class ChatController {
 
   @Get('history/:friendId')
   @UseGuards(JwtGuard)
-  getChatHistory(@Query('userId') userId: string, @Param('friendId') friendId: string) {
-    return this.chatService.getChatHistory(+userId, +friendId);
+  async getChatHistory(@Query('userId') userId: string, @Param('friendId') friendId: string) {
+    try {
+      const history = await this.chatService.getChatHistory(+userId, +friendId);
+      return history;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch chat history');
+    }
   }
 }
