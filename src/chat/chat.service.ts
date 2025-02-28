@@ -20,6 +20,7 @@ export class ChatService {
     const newMessage = this.chatRepository.create({ 
       user, 
       message,
+      friendId,
       timestamp: new Date().toISOString(),
     });
     const savedMessage = await this.chatRepository.save(newMessage);
@@ -37,7 +38,7 @@ export class ChatService {
   async getChatHistory(userId: number, friendId: number) {
     const messages = await this.chatRepository
       .createQueryBuilder('chat')
-      .where('chat.userId IN (:userId, :friendId)', { userId, friendId })
+      .where('(chat.userId = :userId AND chat.friendId = :friendId) OR (chat.userId = :friendId AND chat.friendId = :userId)', { userId, friendId })
       .orderBy('chat.timestamp', 'ASC')
       .getMany();
     return messages;
