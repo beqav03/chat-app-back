@@ -1,99 +1,180 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Real-Time Chat Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A full-stack, real-time chat application built with **NestJS** (backend) and **Next.js** (frontend), featuring secure authentication, friend management, and live messaging powered by **Socket.IO**. This project demonstrates a robust architecture with a MySQL database, TypeORM ORM, and modular CSS styling.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Frontend Components](#frontend-components)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [License](#license)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Features
+- **User Authentication**: Register, login, and logout with JWT-based authentication and password hashing.
+- **Real-Time Messaging**: Send and receive messages instantly using Socket.IO, with typing indicators and chat history.
+- **Friend System**: Search users, send/accept/reject friend requests, and view friend lists.
+- **Profile Management**: Update name, bio, profile picture, email (with verification), and password.
+- **Notifications**: Real-time friend request updates and UI notifications for actions like successful registration.
+- **Responsive Design**: Clean, modular CSS for a user-friendly experience across devices.
+- **Security**: Role-based access (admin/user/guest), login attempt limits, and email verification.
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## Tech Stack
+### Backend
+- **NestJS**: Progressive Node.js framework with TypeScript.
+- **TypeORM**: ORM for MySQL database management.
+- **Socket.IO**: Real-time bidirectional communication.
+- **JWT**: Token-based authentication.
+- **bcryptjs**: Password hashing.
+- **Nodemailer**: Email verification service.
+- **Multer**: File uploads for profile pictures.
+- **MySQL**: Relational database.
 
-```bash
-# development
-$ npm run start
+### Frontend
+- **Next.js**: React framework for server-side rendering and static generation.
+- **React**: UI library with hooks and state management.
+- **Socket.IO Client**: For real-time client-server communication.
+- **CSS Modules**: Scoped styling for components.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## Project Structure
+├── backend/
+│   ├── src/
+│   │   ├── app.module.ts          # Root module
+│   │   ├── user/                  # User management module
+│   │   ├── auth/                  # Authentication module
+│   │   ├── chat/                  # Chat functionality module
+│   │   ├── friend/                # Friend system module
+│   │   ├── profile/              # Profile management module
+│   │   ├── email/                # Email service module
+│   └── uploads/                  # Directory for file uploads
+├── frontend/
+│   ├── components/               # Reusable React components
+│   │   ├── AuthPage.tsx          # Login/register page
+│   │   ├── MainApp.tsx           # Main app layout
+│   │   ├── ChatSection.tsx       # Chat interface
+│   │   ├── Sidebar.tsx          # Friend list sidebar
+│   │   ├── Header.tsx           # Navigation header
+│   │   ├── ProfileModal.tsx     # Profile editor
+│   │   └── DoveAnimation.tsx    # Fun animation for actions
+│   ├── styles/                  # CSS modules
+│   └── utils/                   # Utility functions (e.g., fetchWithAuth)
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## Prerequisites
+- **Node.js** (>= 16.x)
+- **MySQL** (>= 8.x)
+- **npm** or **yarn**
+- A Gmail account for Nodemailer (or another SMTP service)
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+## Installation
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/chat-app.git
+   cd chat-app
+   
+1:Install backend dependencies:
+bash
+cd backend
+npm install
+Install frontend dependencies:
+bash
+cd ../frontend
+npm install
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Configuration
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Backend Environment: Create a .env file in the backend/ directory:
+.env
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_USERNAME=your_db_user
+DATABASE_PASSWORD=your_db_password
+DATABASE_NAME=chat_app_db
+JWT_SECRET=your_jwt_secret
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+Frontend Environment: Create a .env.local file in the frontend/ directory:
+.env
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Email Configuration: Update email.service.ts with your SMTP credentials:
+auth: {
+  user: 'your-email@gmail.com',
+  pass: 'your-email-password', // Use an App Password if 2FA is enabled
+}
 
-## Resources
+Database Setup:
+Create a MySQL database named chat_app_db.
+TypeORM will auto-create tables with synchronize: true.
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Running the Application
 
-## Support
+Start the backend:
+bash
+cd backend
+npm run start:dev
+Runs on http://localhost:3000.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Start the frontend:
+bash
+cd frontend
+npm run dev
+Runs on http://localhost:3001.
+Open http://localhost:3001 in your browser.
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## API Endpoints
 
-## License
+Endpoint	Method	Description	Protected
+/auth/login	POST	User login	No
+/user/register	POST	User registration	No
+/friends/request/:id	POST	Send friend request	Yes
+/friends/accept/:id	POST	Accept friend request	Yes
+/chat/send	POST	Send a chat message	Yes
+/chat/history/:friendId	GET	Get chat history	Yes
+/profile	GET	Fetch user profile	Yes
+/profile/update-picture	PUT	Update profile picture	Yes
+/user/search	GET	Search users by keyword	Yes
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## Frontend Components
+
+AuthPage: Handles login and registration with password strength checker.
+MainApp: Core layout with Header, Sidebar, and ChatSection.
+ChatSection: Real-time chat with typing indicators and message history.
+Sidebar: Displays friends and pending requests with accept/reject actions.
+Header: Navigation with search, notifications, and profile dropdown.
+ProfileModal: Edit profile details, picture, email, and password.
+DoveAnimation: Visual feedback for actions like sending messages.
+
+---
+
+## Contributing
+
+Fork the repository.
+Create a feature branch (git checkout -b feature/your-feature).
+Commit your changes (git commit -m 'Add your feature').
+Push to the branch (git push origin feature/your-feature).
+Open a Pull Request.
