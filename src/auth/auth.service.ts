@@ -12,7 +12,7 @@ export class AuthService {
         try {
             const user = await this.userRepository.findByEmailAndPassword(data.email);
             if (!user) {
-                throw new UnauthorizedException(`The data provided is incorrect`);
+                throw new UnauthorizedException(`User not found or incorrect credentials.`);
             }
     
             const isPasswordValid = await bcrypt.compare(data.password, user.password);
@@ -21,10 +21,10 @@ export class AuthService {
                 await this.userRepository.update(user.id, { loginAttempts: user.loginAttempts });
     
                 if (user.loginAttempts >= 5) {
-                    throw new UnauthorizedException(`User is locked`);
+                    throw new UnauthorizedException(`Too many failed login attempts. Your account is locked.`);
                 }
     
-                throw new UnauthorizedException(`The data provided is incorrect`);
+                throw new UnauthorizedException(`Incorrect password. Please try again.`);
             }
     
             const token = await this.jwtService.signAsync(
@@ -47,9 +47,9 @@ export class AuthService {
             if (error instanceof UnauthorizedException) {
                 throw error;
             }
-            throw new InternalServerErrorException('An unexpected error occurred');
+            throw new InternalServerErrorException('An unexpected error occurred.');
         }
-    }    
+    }     
 
     async refreshToken(oldToken: string) {
         try {
