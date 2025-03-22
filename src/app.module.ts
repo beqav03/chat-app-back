@@ -10,9 +10,26 @@ import { ChatModule } from './chat/chat.module';
 import { FriendModule } from './frined/friend.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { ProfileModule } from './profile/profile.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
-  imports: [ConfigModule.forRoot(),TypeOrmModule.forRoot({
+  imports: [
+    CacheModule.register({
+      ttl: 60,
+      max: 100,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 10,
+        },
+      ],
+    }),
+    ConfigModule.forRoot(),
+    TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.DATABASE_HOST,
     port: Number(process.env.DATABASE_PORT),
@@ -24,14 +41,14 @@ import { ProfileModule } from './profile/profile.module';
     synchronize: true,
   }),
   JwtModule.register({
-    secret: process.env.JWT_SECRET || 'defaultSecret',
+    secret: process.env.JWT_SECRET,
     global: true,
   }),
   MulterModule.register({
-    dest: './uploads', // Path where files will be stored
+    dest: './uploads',
   }),
   UserModule,AuthModule,ChatModule,FriendModule,ProfileModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {provide: APP_GUARD, useClass: ThrottlerGuard}],
 })
 export class AppModule {}

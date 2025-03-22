@@ -55,33 +55,25 @@ export class UserService {
         await this.userRepository.updateProfilePicture(userId, filePath);
     }
 
-     // Update Email: Generate a verification code and send it to the new email
      async updateEmail(userId: number, newEmail: string): Promise<{ message: string }> {
         const user = await this.userRepository.findOne(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
-        // Generate a 4-digit verification code
         const verificationCode = crypto.randomInt(1000, 9999).toString();
-
-        // Save the new email and verification code in the database (pending email change)
         await this.userRepository.updateEmail(userId, newEmail, verificationCode);
-
-        // Send the verification email with the code (using EmailService)
         await this.emailService.sendVerificationEmail(newEmail, verificationCode);
 
         return { message: 'A verification code has been sent to your new email' };
     }
 
-    // Finalize email change after user enters the verification code
     async confirmEmailChange(userId: number, code: string): Promise<{ message: string }> {
         const user = await this.userRepository.findOne(userId);
         if (!user || user.emailVerificationCode !== code) {
             throw new BadRequestException('Invalid verification code');
         }
 
-        // Update the user's email to the pending email
         await this.userRepository.confirmEmailChange(userId);
 
         return { message: 'Email successfully updated' };
